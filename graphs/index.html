@@ -1,12 +1,20 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Interactive Word Graph</title>
-</head>
-<body>
-  <button id="toggleButton">Toggle Create Node</button>
-  <canvas id="graphCanvas" width="800" height="600"></canvas>
-
-  <script src="./scripts/main.js"></script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Graph</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="graphCanvas" width="500" height="500"></canvas>
+    <script src="./scripts/main.js"></script>
+  </body>
 </html>

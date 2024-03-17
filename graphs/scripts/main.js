@@ -1,177 +1,148 @@
 class Node {
-    constructor(id, x, y, text) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
-        this.text = text;
-        this.connections = new Set();
-    }
+  constructor(id, x, y, text) {
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    this.text = text;
+    this.isSelected = false;
+  }
+
+  setPosition(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  setSelected(selected) {
+    this.isSelected = selected;
+  }
 }
 
 class Graph {
-    constructor(nodes) {
-        this.nodes = nodes;
-        this.selectedNode = null;
-        this.dragging = false;
+  constructor() {
+    this.nodes = new Map();
+    this.selectedNode = null;
+    this.canvas = null;
+    this.ctx = null;
+  }
 
-        canvas.addEventListener("mousedown", this.handleMouseDown.bind(this));
-        canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
-        canvas.addEventListener("mouseup", this.handleMouseUp.bind(this));
-        canvas.addEventListener("click", this.handleClick.bind(this));
+  setCanvas(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
+    canvas.addEventListener("mousedown", this.handleMouseDown.bind(this));
+    canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
+    canvas.addEventListener("mouseup", this.handleMouseUp.bind(this));
+    canvas.addEventListener("dblclick", this.handleDoubleClick.bind(this));
+  }
 
-    }
+  addNode(id, x, y, text) {
+    const node = new Node(id, x, y, text);
+    this.nodes.set(id, node);
+    this.draw();
+  }
 
-
-
-    handleMouseDown(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
-        // Iterate over nodes and check if the mouse click is inside any node
-        for (const [nodeId, node] of this.nodes) {
-            const distance = Math.sqrt((mouseX - node.x) ** 2 + (mouseY - node.y) ** 2);
-            if (distance <= 20) { // Assuming node radius is 20
-                this.selectedNode = node;
-                this.dragging = true;
-                break;
-            }
-        }
-    }
-
-    // Event handler for mouse move event
-    handleMouseMove(event) {
-        if (this.dragging && this.selectedNode) {
-            const rect = this.canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
-
-            // Update the position of the selected node
-            this.selectedNode.x = mouseX;
-            this.selectedNode.y = mouseY;
-
-            // Redraw the graph
-            this.draw();
-        }
-    }
-
-    // Event handler for mouse up event
-    handleMouseUp(event) {
-        this.dragging = false;
-        this.selectedNode = null;
-    }
-
-    handleClick(event) {
-        this.addNewNode(event)
+  selectNode(x, y) {
+    for (const [_nodeId, node] of this.nodes.entries()) {
+      const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+      if (distance <= 10) {
+        this.selectedNode = node;
+        node.setSelected(true);
         this.draw();
+        break;
+      }
+    }
+  }
+
+  moveSelectedNode(x, y) {
+    if (this.selectedNode) {
+      this.selectedNode.setPosition(x, y);
+      this.draw();
+    }
+  }
+
+  deleteSelectedNode() {
+    if (this.selectedNode) {
+      const index = this.nodes.indexOf(this.selectedNode);
+      if (index !== -1) {
+        this.nodes.splice(index, 1);
+        this.selectedNode = null;
+        this.draw();
+      }
+    }
+  }
+
+  draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    for (const [_nodeId, node] of this.nodes) {
+      this.ctx.beginPath();
+      this.ctx.arc(node.x, node.y, 10, 0, 2 * Math.PI);
+      this.ctx.fillStyle = node.isSelected ? "skyblue" : "steelblue";
+      this.ctx.fill();
+      this.ctx.strokeStyle = "black";
+      this.ctx.stroke();
+
+      this.ctx.fillStyle = "black";
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
+      this.ctx.fillText(node.text, node.x, node.y);
+    }
+  }
+
+  handleMouseDown(event) {
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Check for creating a new node on double click
+    if (event.detail === 2) {
+      this.addNode(generateUniqueId(), mouseX, mouseY, "New Node");
+      this.draw();
+      return;
     }
 
-    useCanvasById(id) {
-        this.canvas = document.getElementById(id);
-        this.ctx = canvas.getContext("2d")
+    // Check for selecting an existing node on single click
+    this.selectNode(mouseX, mouseY);
+  }
+
+  handleMouseMove(event) {
+    const mouseX = event.clientX - this.canvas.getBoundingClientRect().left;
+    const mouseY = event.clientY - this.canvas.getBoundingClientRect().top;
+
+    if (this.selectedNode) {
+      this.moveSelectedNode(mouseX, mouseY);
+    }
+  }
+
+  handleMouseUp() {
+    // Deselect node on mouse up (optional)
+    this.selectedNode = null;
+  }
+
+  handleDoubleClick(event) {
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Check for deleting a selected node (optional)
+    if (this.selectedNode) {
+      this.deleteSelectedNode();
+      return;
     }
 
-    addNewNode(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
-        const text = prompt("Enter text for the node:");
-        if (text !== null) { // Check if user didn't cancel prompt
-            const nodeId = generateUniqueId();
-            const newNode = new Node(nodeId, mouseX, mouseY, text);
-            this.nodes.set(nodeId, newNode);
-            this.draw(); // Redraw the graph
-        }
-
-    }
-
-    checkConnectionsBetweenNodes() {
-        const nodeArray = Array.from(this.nodes.values());
-        for (let i = 0; i < nodeArray.length; i++) {
-            for (let j = i + 1; j < nodeArray.length; j++) {
-                // Split the text into words
-                const words1 = nodeArray[i].text.split(/\s+/);
-                const words2 = nodeArray[j].text.split(/\s+/);
-    
-                // Check if any word from the first node matches any word from the second node
-                if (this.hasCommonWord(words1, words2)) {
-                    nodeArray[i].connections.add(nodeArray[j].id);
-                    nodeArray[j].connections.add(nodeArray[i].id);
-                }
-            }
-        }
-    }
-    
-    // Helper function to check if any word from the first array matches any word from the second array
-    hasCommonWord(words1, words2) {
-        return words1.some(word1 => words2.includes(word1));
-    }
-    
-
-    drawLinesBetweenNodes() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        for (const [_nodeId, node] of this.nodes) {
-            node.connections.forEach(connectionId => {
-                const targetNode = this.nodes.get(connectionId);
-                this.ctx.beginPath();
-                this.ctx.moveTo(node.x, node.y);
-                this.ctx.lineTo(targetNode.x, targetNode.y);
-                this.ctx.strokeStyle = "black";
-                this.ctx.stroke();
-            });
-        }
-    }
-
-    drawNodes() {
-        for (const [_nodeId, node] of this.nodes) {
-            const textWidth = this.ctx.measureText(node.text).width;
-            const radius = Math.max(textWidth / 2 + 10, 15)
-            this.ctx.beginPath();
-            this.ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
-            this.ctx.fillStyle = "steelblue";
-            this.ctx.fill();
-            this.ctx.strokeStyle = "black";
-            this.ctx.stroke();
-
-            this.ctx.fillStyle = "white";
-            this.ctx.textAlign = "center";
-            this.ctx.textBaseline = "middle";
-            this.ctx.fillText(node.text, node.x, node.y);
-        }
-    }
-    
-
-    draw() {
-        this.checkConnectionsBetweenNodes();
-        this.drawLinesBetweenNodes();
-        this.drawNodes()
-    }
+    // Handle single click events if needed (e.g., editing node text)
+  }
 }
-
-
-const canvas = document.getElementById("graphCanvas");
-const toggleButton = document.getElementById("toggleButton");
-
-let nodes = new Map(); // Map to store nodes and their connections
-nodes.set("1", new Node("1", 100, 100, "10 Year Vision"));
-nodes.set("2", new Node("2", 150, 250, "5 Year Vision"));
-nodes.set("3", new Node("3", 300, 300, "1 Year Vision"));
-nodes.set("4", new Node("4", 400, 400, "Python 1"));
-nodes.set("5", new Node("5", 300, 450, "Golang 1"));
-nodes.set("6", new Node("5", 400, 300, "Nodejs 5 1"));
-let creatingNode = true; // Flag to indicate whether node creation is enabled
-
-// Event listener for button click to toggle node creation
-toggleButton.addEventListener("click", function() {
-  creatingNode = !creatingNode;
-});
-
-const graph = new Graph(nodes);
-graph.useCanvasById("graphCanvas")
-graph.draw();
 
 function generateUniqueId() {
   return Math.random().toString(36).substr(2, 9);
 }
+
+const canvas = document.getElementById("graphCanvas");
+const graph = new Graph();
+
+graph.setCanvas(canvas);
+
+graph.addNode(generateUniqueId(), 50, 50, "Node 1");
+graph.addNode(generateUniqueId(), 50, 100, "Node 2");
+console.log(graph.nodes);
+
+graph.draw();
