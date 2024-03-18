@@ -12,6 +12,16 @@
   <body>
     <canvas id="tutorial" width="250" height="250"></canvas>
     <script>
+      const cursor = {
+        x: innerWidth / 2,
+        y: innerHeight / 2,
+      };
+
+      addEventListener("mousemove", (e) => {
+        cursor.x = e.clientX;
+        cursor.y = e.clientY;
+      });
+
       function draw() {
         const canvas = document.getElementById("tutorial");
         if (canvas.getContext) {
@@ -38,8 +48,13 @@
           ctx.beginPath();
           ctx.arc(220, 200, 20, 0, 2 * Math.PI);
           ctx.stroke();
+
+          ctx.font = "24px serif";
+          const text = ctx.measureText("foo");
+          ctx.fillText("foo", 60, 110 - text.width);
         }
       }
+
       window.addEventListener("load", draw);
     </script>
   </body>

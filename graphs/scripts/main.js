@@ -41,13 +41,22 @@ class Graph {
   }
 
   selectNode(x, y) {
+    let nodeFound = false;
     for (const [_nodeId, node] of this.nodes.entries()) {
       const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
       if (distance <= 10) {
         this.selectedNode = node;
         node.setSelected(true);
+
+        nodeFound = true;
         this.draw();
         break;
+      }
+
+      if (distance >= 10) {
+        node.setSelected(false);
+        this.selectedNode = null;
+        this.draw();
       }
     }
   }
@@ -61,12 +70,9 @@ class Graph {
 
   deleteSelectedNode() {
     if (this.selectedNode) {
-      const index = this.nodes.indexOf(this.selectedNode);
-      if (index !== -1) {
-        this.nodes.splice(index, 1);
-        this.selectedNode = null;
-        this.draw();
-      }
+      this.nodes.delete(this.selectedNode.id);
+      this.selectedNode = null;
+      this.draw();
     }
   }
 
@@ -75,7 +81,7 @@ class Graph {
     for (const [_nodeId, node] of this.nodes) {
       this.ctx.beginPath();
       this.ctx.arc(node.x, node.y, 10, 0, 2 * Math.PI);
-      this.ctx.fillStyle = node.isSelected ? "skyblue" : "steelblue";
+      this.ctx.fillStyle = node.isSelected ? "skyblue" : "white";
       this.ctx.fill();
       this.ctx.strokeStyle = "black";
       this.ctx.stroke();
@@ -143,6 +149,6 @@ graph.setCanvas(canvas);
 
 graph.addNode(generateUniqueId(), 50, 50, "Node 1");
 graph.addNode(generateUniqueId(), 50, 100, "Node 2");
-console.log(graph.nodes);
+//console.log(graph.nodes);
 
 graph.draw();
