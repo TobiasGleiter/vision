@@ -149,6 +149,7 @@ graph.setCanvas(canvas);
 
 graph.addNode(generateUniqueId(), 50, 50, "Node 1");
 graph.addNode(generateUniqueId(), 50, 100, "Node 2");
+graph.addNode(generateUniqueId(), 50, 100, "Node 3");
 //console.log(graph.nodes);
 
 graph.draw();
