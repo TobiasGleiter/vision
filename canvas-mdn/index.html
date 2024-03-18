@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>Canvas tutorial</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="tutorial" width="250" height="250"></canvas>
+    <script>
+      function draw() {
+        const canvas = document.getElementById("tutorial");
+        if (canvas.getContext) {
+          const ctx = canvas.getContext("2d");
+
+          //   ctx.fillRect(25, 25, 100, 100);
+          //   ctx.clearRect(45, 45, 60, 60);
+          ctx.strokeRect(50, 50, 50, 50);
+
+          ctx.beginPath();
+          ctx.moveTo(75, 100);
+          ctx.bezierCurveTo(75, 100, 100, 200, 200, 200);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(150, 130, 20, 0, 2 * Math.PI);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(150, 150);
+          ctx.quadraticCurveTo(150, 190, 200, 200);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(220, 200, 20, 0, 2 * Math.PI);
+          ctx.stroke();
+        }
+      }
+      window.addEventListener("load", draw);
+    </script>
+  </body>
+</html>
